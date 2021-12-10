@@ -1,0 +1,7 @@
+/venv/
+/.idea/
+/ml_models/
+/macroeconomic_indicator/migrations/
+/prediction/migrations/
+/quote/migrations/
+/trading_strategy/migrations/
