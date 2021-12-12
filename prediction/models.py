@@ -46,6 +46,8 @@ class MLModel(models.Model):
     algorithm = models.CharField(max_length=100, choices=ML_MODELS_ALGORITHMS, null=True, blank=True)
     parameters = models.TextField(null=True, blank=True)
     last_fit = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def get_inital_parameters(self):
         return {
