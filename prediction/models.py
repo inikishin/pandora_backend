@@ -1,7 +1,7 @@
 """
 Models for prediction app.
 
-Horizon - remove?
+Horizon - horizons for predict representation
 MLModel - main ML model entity
 MLModelFitResults - fit results for each model
 
@@ -19,7 +19,7 @@ ML_MODELS_ALGORITHMS = [
 
 class Horizon(models.Model):
     """
-    Remove ???
+    Horizons for predict representation
     """
     code = models.CharField(max_length=10, unique=True)
     description = models.CharField(max_length=1000, null=True, blank=True)
@@ -71,6 +71,9 @@ class MLModel(models.Model):
 
 
 class MLModelFitResults(models.Model):
+    """
+    ML model fit results
+    """
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     ml_model = models.ForeignKey(MLModel, on_delete=models.CASCADE)
@@ -86,3 +89,21 @@ class MLModelFitResults(models.Model):
 
     def __str__(self):
         return f'{self.algorithm}'
+
+
+class MLModelPrediction(models.Model):
+    """
+    ML Model prediction
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    ml_model = models.ForeignKey(MLModel, on_delete=models.CASCADE)
+    ml_model_fit_result = models.ForeignKey(MLModelFitResults, on_delete=models.CASCADE)
+    datetime = models.DateTimeField()
+    predict = models.FloatField()
+
+    def __repr__(self):
+        return f'{self.ml_model} - {self.datetime}: {self.predict}'
+
+    def __str__(self):
+        return f'{self.ml_model} - {self.datetime}: {self.predict}'
