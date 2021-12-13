@@ -30,7 +30,7 @@ class TradingStrategy(models.Model):
         return f'{self.fullname}'
 
 
-class TradingStrategyTestResult(models.Model):
+class TestResult(models.Model):
     """
     Trading strategy test result model
     """
