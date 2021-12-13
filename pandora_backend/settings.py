@@ -25,6 +25,7 @@ INSTALLED_APPS = [
     'quote',
     'prediction',
     'trading_strategy',
+    'daily_analysis',
     'news'
 ]
 
