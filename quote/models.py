@@ -184,3 +184,7 @@ class BondAdditionalInfo(models.Model):
     def __str__(self):
         return f'{self.ticker.code} (ISIN: {self.code_isin})'
 
+
+class ShareAdditionalInfo(models.Model):
+    ticker = models.OneToOneField(Ticker, on_delete=models.CASCADE, primary_key=True)
+    code_isin = models.CharField(max_length=100, unique=True)
