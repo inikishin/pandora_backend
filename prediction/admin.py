@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Horizon, MLModel, MLModelFitResults
+from .models import Horizon, MLModel, FitResults
 from .tasks import fit_prediction_model
 
 
@@ -17,5 +17,5 @@ class MLModelAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Horizon)
-admin.site.register(MLModelFitResults)
+admin.site.register(FitResults)
 admin.site.register(MLModel, MLModelAdmin)

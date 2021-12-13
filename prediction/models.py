@@ -72,7 +72,7 @@ class MLModel(models.Model):
         return f'{self.code}'
 
 
-class MLModelFitResults(models.Model):
+class FitResults(models.Model):
     """
     ML model fit results
     """
@@ -93,14 +93,14 @@ class MLModelFitResults(models.Model):
         return f'{self.algorithm}'
 
 
-class MLModelPrediction(models.Model):
+class Prediction(models.Model):
     """
     ML Model prediction
     """
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     ml_model = models.ForeignKey(MLModel, on_delete=models.CASCADE)
-    ml_model_fit_result = models.ForeignKey(MLModelFitResults, on_delete=models.CASCADE)
+    ml_model_fit_result = models.ForeignKey(FitResults, on_delete=models.CASCADE)
     datetime = models.DateTimeField()
     predict = models.FloatField()
 
