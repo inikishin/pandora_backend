@@ -3,7 +3,7 @@ import pandas as pd
 from celery import shared_task
 from django_pandas.io import read_frame
 from django.db.models import Max
-from .models import Quote, Market, Timeframe, Ticker, BondAdditionalInfo, Currency, StockExchange, FeaturedQuotes
+from .models import Quote, Market, Timeframe, Ticker, BondAdditionalInfo, Currency, StockExchange
 from trading_strategy.models import TradingStrategy, Signal
 from core.preprocessing import features, signals
 import api.moex as api_moex
@@ -112,110 +112,3 @@ def load_bonds_list_from_moex() -> None:
                                                     );
 
     print(f'Loading bonds ended')
-
-
-@shared_task
-def preprocessing_quotes(ticker_code: str):
-    ticker = Ticker.objects.get(code=ticker_code)
-    timeframe_d1 = Timeframe.objects.get(code='D1')
-    quotes = Quote.objects.filter(ticker=ticker, timeframe=timeframe_d1)
-    df = read_frame(quotes)
-    df['datetime'] = pd.to_datetime(df.datetime)
-    df = df.set_index('datetime')
-
-    df = features.extend_dataframe_with_features(df)
-    df = signals.extend_dataframe_with_signals(df)
-
-    db_object_sig_channel = TradingStrategy.objects.get(code='sig_channel')
-    db_object_sig_divbar = TradingStrategy.objects.get(code='sig_divbar')
-    db_object_sig_nr4id = TradingStrategy.objects.get(code='sig_nr4id')
-    db_object_sig_break_volatility = TradingStrategy.objects.get(code='sig_break_volatility')
-    db_object_sig_elder = TradingStrategy.objects.get(code='sig_elder')
-
-    for index, item in df.iterrows():
-        FeaturedQuotes.objects.update_or_create(ticker=ticker, timeframe=timeframe_d1, datetime=index,
-                                                defaults={
-                                                    'ticker': ticker,
-                                                    'timeframe': timeframe_d1,
-                                                    'datetime': index,
-                                                    'regression_angle_short': item['regression_angle_short'],
-                                                    'regression_angle_short_interpreter': item[
-                                                        'regression_angle_short_interpreter'],
-                                                    'regression_angle_long': item['regression_angle_long'],
-                                                    'regression_angle_long_interpreter': item[
-                                                        'regression_angle_long_interpreter'],
-                                                    'ma_fast': item['ma_fast'],
-                                                    'ma_slow': item['ma_slow'],
-                                                    'ma_fast_position_at_price': item['ma_fast_position_at_price'],
-                                                    'ma_fast_position_at_ma_slow': item[
-                                                        'ma_fast_position_at_ma_slow'],
-                                                    'macd': item['macd'],
-                                                    'macd_change': item['macd_change'],
-                                                    'macd_divergence_short': item['macd_divergence_short'],
-                                                    'macd_divergence_long': item['macd_divergence_long'],
-                                                    'williams': item['williams'],
-                                                    'williams_over_zones': item['williams_over_zones'],
-                                                    'williams_divergence_short': item['williams_divergence_short'],
-                                                    'williams_divergence_long': item['williams_divergence_long'],
-                                                    'cci': item['cci'],
-                                                    'cci_over_zones': item['cci_over_zones'],
-                                                    'cci_divergence_short': item['cci_divergence_short'],
-                                                    'cci_divergence_long': item['cci_divergence_long'],
-                                                    'up_bb': item['up_bb'],
-                                                    'mid_bb': item['mid_bb'],
-                                                    'low_bb': item['low_bb'],
-                                                    'bb_touch': item['bb_touch'],
-                                                    'hummer': item['hummer'],
-                                                    'shooting_star': item['shooting_star'],
-                                                    'divbar': item['divbar'],
-                                                })
-
-        Signals.objects.update_or_create(ticker=ticker, timeframe=timeframe_d1, datetime=index,
-                                         trading_strategy=db_object_sig_channel,
-                                         defaults={
-                                             'ticker': ticker,
-                                             'timeframe': timeframe_d1,
-                                             'datetime': index,
-                                             'trading_strategy': db_object_sig_channel,
-                                             'value': item['sig_channel']
-                                         })
-
-        Signals.objects.update_or_create(ticker=ticker, timeframe=timeframe_d1, datetime=index,
-                                         trading_strategy=db_object_sig_divbar,
-                                         defaults={
-                                             'ticker': ticker,
-                                             'timeframe': timeframe_d1,
-                                             'datetime': index,
-                                             'trading_strategy': db_object_sig_divbar,
-                                             'value': item['sig_divbar']
-                                         })
-
-        Signals.objects.update_or_create(ticker=ticker, timeframe=timeframe_d1, datetime=index,
-                                         trading_strategy=db_object_sig_nr4id,
-                                         defaults={
-                                             'ticker': ticker,
-                                             'timeframe': timeframe_d1,
-                                             'datetime': index,
-                                             'trading_strategy': db_object_sig_nr4id,
-                                             'value': item['sig_nr4id']
-                                         })
-
-        Signals.objects.update_or_create(ticker=ticker, timeframe=timeframe_d1, datetime=index,
-                                         trading_strategy=db_object_sig_break_volatility,
-                                         defaults={
-                                             'ticker': ticker,
-                                             'timeframe': timeframe_d1,
-                                             'datetime': index,
-                                             'trading_strategy': db_object_sig_break_volatility,
-                                             'value': item['sig_break_volatility']
-                                         })
-
-        Signals.objects.update_or_create(ticker=ticker, timeframe=timeframe_d1, datetime=index,
-                                         trading_strategy=db_object_sig_elder,
-                                         defaults={
-                                             'ticker': ticker,
-                                             'timeframe': timeframe_d1,
-                                             'datetime': index,
-                                             'trading_strategy': db_object_sig_elder,
-                                             'value': item['sig_elder']
-                                         })

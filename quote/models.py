@@ -132,43 +132,6 @@ class Quote(models.Model):
         return f'{self.ticker} {self.timeframe} {self.datetime} (O: {self.open} H: {self.high} L: {self.low} C: {self.close})'
 
 
-class FeaturedQuotes(models.Model):
-    ticker = models.ForeignKey(Ticker, on_delete=models.CASCADE)
-    timeframe = models.ForeignKey(Timeframe, on_delete=models.CASCADE)
-    datetime = models.DateTimeField()
-
-    regression_angle_short = models.FloatField(default=0)
-    regression_angle_short_interpreter = models.FloatField(default=0)
-    regression_angle_long = models.FloatField(default=0)
-    regression_angle_long_interpreter = models.FloatField(default=0)
-    ma_fast = models.FloatField(default=0)
-    ma_slow = models.FloatField(default=0)
-    ma_fast_position_at_price = models.FloatField(default=0)
-    ma_fast_position_at_ma_slow = models.FloatField(default=0)
-    macd = models.FloatField(default=0)
-    macd_change = models.FloatField(default=0)
-    macd_divergence_short = models.FloatField(default=0)
-    macd_divergence_long = models.FloatField(default=0)
-    williams = models.FloatField(default=0)
-    williams_over_zones = models.FloatField(default=0)
-    williams_divergence_short = models.FloatField(default=0)
-    williams_divergence_long = models.FloatField(default=0)
-    cci = models.FloatField(default=0)
-    cci_over_zones = models.FloatField(default=0)
-    cci_divergence_short = models.FloatField(default=0)
-    cci_divergence_long = models.FloatField(default=0)
-    up_bb = models.FloatField(default=0)
-    mid_bb = models.FloatField(default=0)
-    low_bb = models.FloatField(default=0)
-    bb_touch = models.FloatField(default=0)
-    hummer = models.FloatField(default=0)
-    shooting_star = models.FloatField(default=0)
-    divbar = models.FloatField(default=0)
-
-    models.UniqueConstraint(fields=['ticker', 'timeframe', 'datetime'],
-                            name='unique_featured_quote_for_ticker_timeframe_datetime')
-
-
 class BondAdditionalInfo(models.Model):
     ticker = models.OneToOneField(Ticker, on_delete=models.CASCADE, primary_key=True)
     short_name = models.CharField(max_length=1000)
