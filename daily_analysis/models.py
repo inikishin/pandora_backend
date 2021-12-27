@@ -1,8 +1,10 @@
+import uuid
 from django.db import models
 from quote.models import Ticker, Timeframe
 
 
 class Features(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     ticker = models.ForeignKey(Ticker, on_delete=models.CASCADE)
     timeframe = models.ForeignKey(Timeframe, on_delete=models.CASCADE)
     datetime = models.DateTimeField()

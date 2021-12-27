@@ -1,7 +1,9 @@
+import uuid
 from django.db import models
 
 
 class Currency(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     code = models.CharField(max_length=100, unique=True)
     fullname = models.CharField(max_length=1000, blank=True, null=True)
 
@@ -13,6 +15,7 @@ class Currency(models.Model):
 
 
 class Calendar(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     code = models.CharField(max_length=100, unique=True)
     fullname = models.CharField(max_length=1000, blank=True, null=True)
 
@@ -24,6 +27,7 @@ class Calendar(models.Model):
 
 
 class Holiday(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     fullname = models.CharField(max_length=1000)
     calendar = models.ForeignKey(Calendar, on_delete=models.CASCADE)
     holiday_date = models.DateField()
@@ -38,6 +42,7 @@ class Holiday(models.Model):
 
 
 class Timeframe(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     code = models.CharField(max_length=10, unique=True)
 
     def __repr__(self):
@@ -48,6 +53,7 @@ class Timeframe(models.Model):
 
 
 class MarketType(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     code = models.CharField(max_length=100, unique=True)
     fullname = models.CharField(max_length=1000, null=True, blank=True)
     description = models.CharField(max_length=1000, null=True, blank=True)
@@ -60,6 +66,7 @@ class MarketType(models.Model):
 
 
 class StockExchange(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     code = models.CharField(max_length=100, unique=True)
     fullname = models.CharField(max_length=1000, null=True, blank=True)
     description = models.CharField(max_length=1000, null=True, blank=True)
@@ -72,6 +79,7 @@ class StockExchange(models.Model):
 
 
 class Market(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     code = models.CharField(max_length=100, unique=True)
     fullname = models.CharField(max_length=1000)
     description = models.CharField(max_length=1000, null=True, blank=True)
@@ -87,6 +95,7 @@ class Market(models.Model):
 
 
 class Ticker(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     code = models.CharField(max_length=100, unique=True)
     fullname = models.CharField(max_length=1000)
     description = models.CharField(max_length=1000, null=True, blank=True)
@@ -103,6 +112,7 @@ class Ticker(models.Model):
 
 
 class Quote(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     ticker = models.ForeignKey(Ticker, on_delete=models.CASCADE)
     timeframe = models.ForeignKey(Timeframe, on_delete=models.CASCADE)
     datetime = models.DateTimeField()

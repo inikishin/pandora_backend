@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from django_pandas.io import read_frame
 from django.contrib.auth.models import User
 
-from .models import MLModel, MLModelFitResults
+from .models import MLModel, FitResults
 from quote.models import Quote
 from .serializers import MLModelSerializer, MLModelFitResultsSerializer
 from core.preprocessing.features import get_available_features_list, extend_dataframe_with_features
@@ -39,23 +39,23 @@ class MLModelViewSet(viewsets.ModelViewSet):
                                    model_parameters['predict']['shift'],
                                    model_parameters['fit']['split_train_percentage'])
         fit_results, filename = fit('1', model.id, splitted_data, model.algorithm, model_parameters['algorithm'])
-        model_fit_results = MLModelFitResults(user=user,
-                                              ml_model=model,
-                                              algorithm=model.algorithm,
-                                              parameters=model.parameters,
-                                              fit_results=json.dumps(fit_results),
-                                              filename=filename)
+        model_fit_results = FitResults(user=user,
+                                       ml_model=model,
+                                       algorithm=model.algorithm,
+                                       parameters=model.parameters,
+                                       fit_results=json.dumps(fit_results),
+                                       filename=filename)
         model_fit_results.save()
         return Response({'result id': model_fit_results.id})
 
 
 class MLModelFitResultsViewSet(viewsets.ModelViewSet):
-    queryset = MLModelFitResults.objects.all()
+    queryset = FitResults.objects.all()
     serializer_class = MLModelFitResultsSerializer
 
     @action(detail=True)
     def predict(self, request, pk=None):
-        model_fit = MLModelFitResults.objects.get(id=pk)
+        model_fit = FitResults.objects.get(id=pk)
         model_parameters = json.loads(model_fit.parameters)
         user = User.objects.get(username='admin')  # TODO Hardcode
 

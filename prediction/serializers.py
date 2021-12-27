@@ -1,4 +1,4 @@
-from .models import MLModel, MLModelFitResults
+from .models import MLModel, FitResults
 from rest_framework import serializers
 
 
@@ -13,5 +13,5 @@ class MLModelSerializer(serializers.ModelSerializer):
 
 class MLModelFitResultsSerializer(serializers.ModelSerializer):
     class Meta:
-        model = MLModelFitResults
+        model = FitResults
         fields = '__all__'

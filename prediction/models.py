@@ -21,6 +21,7 @@ class Horizon(models.Model):
     """
     Horizons for predict representation
     """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     code = models.CharField(max_length=10, unique=True)
     description = models.CharField(max_length=1000, null=True, blank=True)
     duration = models.IntegerField(help_text='Duration in seconds')
