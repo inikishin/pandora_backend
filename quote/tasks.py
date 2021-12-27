@@ -13,7 +13,7 @@ import api.moex as api_moex
 def load_quotes_from_moex_api(ticker_code: str) -> None:
     ticker = Ticker.objects.get(code=ticker_code)
     stock_exchange = StockExchange.objects.get(code='moex')
-    timeframe_d1 = Timeframe.objects.get(code='D1')
+    timeframe_d1 = Timeframe.objects.get(code='d1')
     max_date = Quote.objects.filter(ticker=ticker, timeframe=timeframe_d1).aggregate(Max('datetime'))
 
     if ticker.market.stock_exchange == stock_exchange:

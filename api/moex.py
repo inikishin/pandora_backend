@@ -11,8 +11,9 @@ from datetime import datetime
 url_prefix = 'http://iss.moex.com/'
 engine = 'stock'
 #market = 'shares'
-#board = 'TQBR'
-board = 'TQCB'
+board = 'TQBR'
+#board = 'TQCB'
+#board = 'SMAL'
 
 
 def load_quotes(ticker: str, market: str, from_date: str = '', interval: str = '24') -> pd.DataFrame:
