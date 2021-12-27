@@ -3,8 +3,8 @@ from .models import TradingStrategy, Signal
 
 
 class TradingStrategyAdmin(admin.ModelAdmin):
-    list_display = ['code', 'fullname']
-    ordering = ['code']
+    list_display = ['fullname']
+    ordering = ['fullname']
 
 
 admin.site.register(TradingStrategy, TradingStrategyAdmin)
