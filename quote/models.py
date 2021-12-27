@@ -160,4 +160,8 @@ class BondAdditionalInfo(models.Model):
 
 class ShareAdditionalInfo(models.Model):
     ticker = models.OneToOneField(Ticker, on_delete=models.CASCADE, primary_key=True)
-    code_isin = models.CharField(max_length=100, unique=True)
+    change_1w = models.FloatField()
+    change_1m = models.FloatField()
+    change_3m = models.FloatField()
+    change_6m = models.FloatField()
+    change_1y = models.FloatField()
