@@ -7,6 +7,8 @@ from api.pandora import config, sync
 
 from .models import Market, Timeframe, Ticker, Quote
 from .serializers import MarketSerializer, TimeframeSerializer, TickerSerializer, QuoteSerializer
+from .tasks import load_quotes_from_moex_api
+from .tasks import load_quotes_from_csv_file
 
 
 class MarketViewSet(viewsets.ModelViewSet):
@@ -25,6 +27,29 @@ class TickerViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ['market']
     search_fields = ['code', 'fullname']
+
+    @action(detail=True, methods=['post', 'get'], url_path='load-quotes') # TODO remove GET method
+    def load_quotes(self, request, pk=None):
+        ticker = Ticker.objects.get(pk=pk)
+
+        if ticker.market.stock_exchange.code == 'moex':
+            source = 'api moex'
+            load_quotes_from_moex_api.delay(ticker.code)
+        else:
+            source = 'file'
+            load_quotes_from_csv_file.delay(ticker.code)
+
+        print(f'Loading quotes for ticker {ticker} with pk: {pk} from {source}')
+        print(f'Request data: {request.data}')
+        return Response({'message': 'ok'})
+
+    @action(detail=True, methods=['post', 'get'], url_path='processing-features') # TODO remove GET method
+    def processing_features(self, request, pk=None):
+        ticker = Ticker.objects.get(pk=pk)
+        print(f'Processing features for ticker {ticker} with pk: {pk}')
+        print(f'Request data: {request.data}')
+
+        return Response({'message': 'ok'})
 
 
 class QuoteViewSet(viewsets.ModelViewSet):
