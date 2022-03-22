@@ -38,7 +38,11 @@ class MLModelViewSet(viewsets.ModelViewSet):
                                    model_parameters['predict']['target'],
                                    model_parameters['predict']['shift'],
                                    model_parameters['fit']['split_train_percentage'])
-        fit_results, filename = fit('1', model.id, splitted_data, model.algorithm, model_parameters['algorithm'])
+
+        algorithm_parameters = model_parameters['algorithm']
+        algorithm_parameters.pop('name')
+
+        fit_results, filename = fit('1', model.id, splitted_data, model.algorithm, algorithm_parameters)
         model_fit_results = FitResults(user=user,
                                        ml_model=model,
                                        algorithm=model.algorithm,

@@ -61,15 +61,17 @@ def post(target, target_object, data):
     if url is None:
         return []
 
-    existing_record = get_record(target, target_object, data['id'])
+    target_object_primary_key = SYNC_TREE[target]['objects'][target_object].get('primary_key', 'id')
+    existing_record = get_record(target, target_object, data[target_object_primary_key])
 
     if existing_record:
-        print(f'Record with ID: {data["id"]} already exist. Make PUT request for the data')
+        print(f'Record with ID: {data[target_object_primary_key]} already exist. Make PUT request for the data')
         put(target, target_object, data)
     else:
         request_data = data.copy()
-        request_data['external_id'] = data['id']
-        request_data.pop('id')
+        request_data['external_id'] = str(data[target_object_primary_key])
+        if request_data.get('id'):
+            request_data.pop('id')
         print(f'[POST] url: {url}, data: {request_data}')
         response = requests.post(url=url, json=request_data, verify=False)
         if response:
@@ -81,11 +83,13 @@ def put(target, target_object, data):
     if url is None:
         return []
 
-    existing_record = get_record(target, target_object, data['id'])
+    target_object_primary_key = SYNC_TREE[target]['objects'][target_object].get('primary_key', 'id')
+
+    existing_record = get_record(target, target_object, data[target_object_primary_key])
     if existing_record:
-        print('put url', url + existing_record['id'])
+        print('[POST] url', url + existing_record['id'])
         request_data = data.copy()
-        request_data['external_id'] = data['id']
+        request_data['external_id'] = str(data[target_object_primary_key])
         request_data.pop('id')
         response = requests.put(url=url + existing_record['id'] + '/', json=request_data, verify=False)
         if response:
@@ -97,13 +101,18 @@ def delete(target, target_object, data):
     if url is None:
         return []
 
-    existing_record = get_record(target, target_object, data['id'])
+    target_object_primary_key = SYNC_TREE[target]['objects'][target_object].get('primary_key', 'id')
+
+    existing_record = get_record(target, target_object, data[target_object_primary_key])
 
     if existing_record:
         print('delete url', url + existing_record['id'])
         response = requests.delete(url=url + existing_record['id'] + '/')
         if response:
             print('DELETE response status_code:', response.status_code, response.text)
+
+
+
 
 # def a():
 #     from api.pandora.sync import post, delete, get_record, get, put

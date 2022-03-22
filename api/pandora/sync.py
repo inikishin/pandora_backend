@@ -21,9 +21,15 @@ def sync(target: str, target_object: str, data):
     for item in data:
         target_item = item.copy()
         for column in item.keys():
+            # TODO refactor
+            if column in ['datetime', 'maturity_date', 'next_coupon_date']:
+                target_item[column] = target_item[column].strftime("%Y-%m-%d %H:%M:%S")
             if column in foreign_keys.keys():
                 target_record = get_record(target=target, target_object=foreign_keys[column]['linked_object'], external_id=item[column])
                 target_item.pop(column)
+                print(target_record)
+                print(target_item)
+
                 target_item[foreign_keys[column]['target_column_name']] = target_record['id']
 
         print('target_item', target_item)

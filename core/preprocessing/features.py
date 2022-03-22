@@ -127,19 +127,43 @@ def regression_line_angle(data, reg_n):
 
     return d.angle
 
+# TODO what to do with murray math
+def murray_math_count(high: pd.Series, low: pd.Series, close: pd.Series):
+    max_price = high.max()
+    min_price = low.min()
+    cur_price = close.values[-1]
 
-def regression_line_interpreter(angle):
-    if angle > 45:
-        return 2
-    elif angle > 5:
-        return 1
-    elif angle < -45:
-        return -2
-    elif angle < -5:
-        return -1
+    if max_price < 1:
+        octave = 1
+    elif max_price < 10:
+        octave = 10
+    elif max_price < 100:
+        octave = 100
+    elif max_price < 1000:
+        octave = 1000
+    elif max_price < 10000:
+        octave = 10000
     else:
-        return 0
+        octave = 100000
 
+    main_step = octave / 8
+    mm_main_lines = []
+    for i in range(0, 9):
+        mm_main_lines.append(main_step * i)
+
+    i = 0
+    while cur_price >= mm_main_lines[i]:
+        i += 1
+
+    q_min = mm_main_lines[i - 1]
+    q_max = mm_main_lines[i]
+
+    step = (q_max - q_min) / 8
+    dict_mm_lines = dict()
+    for j in range(0, 9):
+        dict_mm_lines[str(j)] = q_min + step * j
+
+    return dict_mm_lines
 
 def get_available_features_list():
     return [
@@ -147,14 +171,74 @@ def get_available_features_list():
             'name': 'MA',
             'description': 'Simple moving average',
             'params': {
-                'period': {'type': 'integer', 'default': 8, 'description': 'Simple moving average period'}
+                'period': {'type': 'integer', 'default': 8, 'description': 'Simple moving average period'},
+                'extended': {'type': 'boolean', 'default': False, 'description': 'Add extended to features'},
             }
         },
         {
-            'name': 'AO',
-            'description': 'Awesome oscillator',
+            'name': 'MACD',
+            'description': 'MACD',
+            'params': {
+                'fastperiod': {'type': 'integer', 'default': 5, 'description': 'fastperiod'},
+                'slowperiod': {'type': 'integer', 'default': 35, 'description': 'slowperiod'},
+                'signalperiod': {'type': 'integer', 'default': 3, 'description': 'signalperiod'},
+                'extended': {'type': 'boolean', 'default': False, 'description': 'Add extended to features'},
+                'divergence': {'type': 'boolean', 'default': False, 'description': 'Add divergence to features'}
+            }
+        },
+        {
+            'name': 'CCI',
+            'description': 'CCI',
+            'params': {
+                'timeperiod': {'type': 'integer', 'default': 13, 'description': 'CCI'},
+                'extended': {'type': 'boolean', 'default': False, 'description': 'Add extended to features'},
+                'divergence': {'type': 'boolean', 'default': False, 'description': 'Add divergence to features'}
+            }
+        },
+        {
+            'name': 'Williams',
+            'description': 'Williams',
+            'params': {
+                'timeperiod': {'type': 'integer', 'default': 8, 'description': 'Willams percentage range'},
+                'extended': {'type': 'boolean', 'default': False, 'description': 'Add extended to features'},
+                'divergence': {'type': 'boolean', 'default': False, 'description': 'Add divergence to features'}
+            }
+        },
+        {
+            'name': 'Bollindger Bands',
+            'description': 'Bollindger Bands',
+            'params': {
+                'timeperiod': {'type': 'integer', 'default': 8, 'description': 'Bollindger Bands period'},
+                'extended': {'type': 'boolean', 'default': False, 'description': 'Add extended to features'},
+            }
+        },
+        {
+            'name': 'DivBar',
+            'description': 'DivBar',
             'params': {}
         },
+        {
+            'name': 'Hummer',
+            'description': 'Hummer',
+            'params': {}
+        },
+        {
+            'name': 'Shooting star',
+            'description': 'Shooting star',
+            'params': {}
+        },
+        {
+            'name': 'Regression Line Angle',
+            'description': 'Regression Line Angle',
+            'params': {
+                'timeperiod': {'type': 'integer', 'default': 8, 'description': ' Bar in row length '},
+            }
+        },
+        {
+            'name': 'Murray Math Lines',
+            'description': 'Murray Math Lines',
+            'params': {}
+        }
     ]
 
 
@@ -166,39 +250,71 @@ def extend_dataframe_with_features(initial_dataframe: pd.DataFrame, features=[])
 
             if feature['name'] == 'MA':
                 df[feature['code']] = ta.EMA(df.close, feature['params']['period'])
+                if feature['params'].get('extended'):
+                    df[f"{feature['code']}_position_at_price"] = df.close - df[feature['code']]
+                    df[f"{feature['code']}_position_at_price"] = df[f"{feature['code']}_position_at_price"].apply(lambda x: 1 if x > 0 else 0)
 
+            if feature['name'] == 'MACD':
+                df[feature['code']], _, _ = ta.MACD(df.close,
+                                                    feature['params']['fastperiod'],
+                                                    feature['params']['slowperiod'],
+                                                    feature['params']['signalperiod'])
+                if feature['params'].get('extended'):
+                    df[f"{feature['code']}_change"] = df[feature['code']].shift(1)
+                    df[f"{feature['code']}_change"] = df[feature['code']] - df[f"{feature['code']}_change"]
+                    df[f"{feature['code']}_change"] = df[f"{feature['code']}_change"].apply(lambda x: 1 if x > 0 else 0)
+                if feature['params'].get('divergence'):
+                    df[f"{feature['code']}_divergence_short"] = divergence(df.high, df.low, df[feature['code']], 3, 8)
+                    df[f"{feature['code']}_divergence_long"] = divergence(df.high, df.low, df[feature['code']], 5, 35)
 
+            if feature['name'] == 'CCI':
+                df[feature['code']] = ta.CCI(df.high,
+                                             df.low,
+                                             df.close,
+                                             feature['params']['timeperiod'])
+                if feature['params'].get('extended'):
+                    df[f"{feature['code']}_over_zones"] = df[feature['code']].apply(over_zones_indicator, args=[100, -100])
+                if feature['params'].get('divergence'):
+                    df[f"{feature['code']}_divergence_short"] = divergence(df.high, df.low, df[feature['code']], 3, 8)
+                    df[f"{feature['code']}_divergence_long"] = divergence(df.high, df.low, df[feature['code']], 5, 35)
 
-    # TODO Засунуть параметры в какой-нибудь файл конфигурации
-    # df['regression_angle_short'] = regression_line_angle(df.close, 8)
-    # df['regression_angle_short_interpreter'] = df['regression_angle_short'].apply(regression_line_interpreter)
-    # df['regression_angle_long'] = regression_line_angle(df.close, 35)
-    # df['regression_angle_long_interpreter'] = df['regression_angle_long'].apply(regression_line_interpreter)
-    # df['ma_fast'] = ta.EMA(df.close, 8)
-    # df['ma_slow'] = ta.EMA(df.close, 13)
-    # df['ma_fast_position_at_price'] = df.close - df.ma_fast
-    # df['ma_fast_position_at_price'] = df.ma_fast_position_at_price.apply(lambda x: 1 if x > 0 else 0)
-    # df['ma_fast_position_at_ma_slow'] = df.ma_fast - df.ma_slow
-    # df['ma_fast_position_at_ma_slow'] = df.ma_fast_position_at_ma_slow.apply(lambda x: 1 if x > 0 else 0)
-    # df['macd'], _, _ = ta.MACD(df.close, fastperiod=5, slowperiod=35, signalperiod=3)
-    # df['macd_change'] = df['macd'].shift(1)
-    # df['macd_change'] = df['macd'] - df['macd_change']
-    # df['macd_change'] = df['macd_change'].apply(lambda x: 1 if x > 0 else 0)
-    # df['macd_divergence_short'] = divergence(df.high, df.low, df.macd, 3, 8)
-    # df['macd_divergence_long'] = divergence(df.high, df.low, df.macd, 5, 35)
-    # df['williams'] = ta.WILLR(df.high, df.low, df.close, timeperiod=8)
-    # df['williams_over_zones'] = df.williams.apply(over_zones_indicator, args=[-20, -80])
-    # df['williams_divergence_short'] = divergence(df.high, df.low, df.williams, 3, 8)
-    # df['williams_divergence_long'] = divergence(df.high, df.low, df.williams, 5, 35)
-    # df['cci'] = ta.CCI(df.high, df.low, df.close, timeperiod=12)
-    # df['cci_over_zones'] = df.cci.apply(over_zones_indicator, args=[100, -100])
-    # df['cci_divergence_short'] = divergence(df.high, df.low, df.cci, 3, 8)
-    # df['cci_divergence_long'] = divergence(df.high, df.low, df.cci, 5, 35)
-    # df['up_bb'], df['mid_bb'], df['low_bb'] = ta.BBANDS(df.close, timeperiod=5, nbdevup=2, nbdevdn=2, matype=0)
-    # df['bb_touch'] = bb_touch(df.up_bb, df.low_bb, df.high, df.low, 0.1)
-    # df['hummer'] = ta.CDLHAMMER(df.open, df.high, df.low, df.close)
-    # df['shooting_star'] = ta.CDLSHOOTINGSTAR(df.open, df.high, df.low, df.close)
-    # df['divbar'] = divbar(df.high, df.low, df.close)
+            if feature['name'] == 'Williams':
+                df[feature['code']] = ta.WILLR(df.high,
+                                               df.low,
+                                               df.close,
+                                               feature['params']['timeperiod'])
+                if feature['params'].get('extended'):
+                    df[f"{feature['code']}_over_zones"] = df[feature['code']].apply(over_zones_indicator, args=[100, -100])
+                if feature['params'].get('divergence'):
+                    df[f"{feature['code']}_divergence_short"] = divergence(df.high, df.low, df[feature['code']], 3, 8)
+                    df[f"{feature['code']}_divergence_long"] = divergence(df.high, df.low, df[feature['code']], 5, 35)
+
+            if feature['name'] == 'Bollindger Bands':
+                df[f"up_{feature['code']}"], \
+                df[f"mid_{feature['code']}"], \
+                df[f"low_{feature['code']}"] = ta.BBANDS(df.close,
+                                                        feature['params']['timeperiod'],
+                                                        nbdevup=2,
+                                                        nbdevdn=2,
+                                                        matype=0)
+                if feature['params'].get('extended'):
+                    df[f"{feature['code']}_touch"] = bb_touch(df[f"up_{feature['code']}"],
+                                                              df[f"low_{feature['code']}"],
+                                                              df.high,
+                                                              df.low,
+                                                              0.1)
+
+            if feature['name'] == 'DivBar':
+                df[feature['code']] = divbar(df.high, df.low, df.close)
+
+            if feature['name'] == 'Hummer':
+                df[feature['code']] = ta.CDLHAMMER(df.open, df.high, df.low, df.close)
+
+            if feature['name'] == 'Shooting star':
+                df[feature['code']] = ta.CDLSHOOTINGSTAR(df.open, df.high, df.low, df.close)
+
+            if feature['name'] == 'Regression Line Angle':
+                df[feature['code']] = regression_line_angle(df.close, feature['params']['timeperiod'])
 
     df['datetime'] = df['datetime'].apply(lambda x: x.strftime('%Y-%m-%d %H:%M:%S'))
     df.set_index('datetime', inplace=True)
