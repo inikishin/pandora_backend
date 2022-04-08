@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+from ftplib import FTP
 
 from django.db.models import Max
 
@@ -32,6 +33,7 @@ def import_quotes_from_df(df: pd.DataFrame, ticker_code: str, timeframe_code: st
                           'volume': row['vol']
                           }
             )
+            quotes_imported += quotes_imported
         print('Loading quotes for {} ended. Added {} quotes'.format(ticker, quotes_imported))
 
     return quotes_imported
@@ -59,6 +61,29 @@ def load_quotes_from_csv_file(ticker_code: str, timeframe_code: str) -> int:
               .format(ticker_code, files))
     else:
         history_df = pd.read_csv(files[0])
+        quotes_imported = import_quotes_from_df(df=history_df, ticker_code=ticker_code, timeframe_code=timeframe_code)
+
+    return quotes_imported
+
+
+def load_quotes_from_ftp(ticker_code: str, timeframe_code: str) -> int:
+    quotes_imported = 0
+    print('Load quotes from FTP for {} {}'.format(ticker_code, timeframe_code))
+
+    ftp = FTP(os.getenv('FTP_IP'))
+    ftp.login(user=os.getenv('FTP_LOGIN'), passwd=os.getenv('FTP_PASS'))
+    ftp.cwd('quotes')
+    ftp.retrlines('LIST')
+
+    temp_folder = os.getenv('TEMP_FOLDER')
+    filename = '{}_{}.csv'.format(ticker_code.upper(), timeframe_code.upper())
+    temp_path = temp_folder + '/' + filename
+    with open(temp_path, 'wb') as fp:
+        ftp.retrbinary('RETR {}'.format(filename), fp.write)
+
+    if os.path.isfile(temp_path):
+        history_df = pd.read_csv(temp_path)
+        os.remove(temp_path)
         quotes_imported = import_quotes_from_df(df=history_df, ticker_code=ticker_code, timeframe_code=timeframe_code)
 
     return quotes_imported
