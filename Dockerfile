@@ -23,7 +23,7 @@ RUN python -m pip install --upgrade pip \
 
 RUN ls -la
 
-CMD python manage.py runserver
+CMD uwsgi uwsgi.ini
 
 # docker build -t pandora-backend .
 # docker run --network pandora --name pandora-backend pandora-backend
