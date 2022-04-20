@@ -26,4 +26,4 @@ RUN ls -la
 CMD uwsgi uwsgi.ini
 
 # docker build -t pandora-backend .
-# docker run --network pandora --name pandora-backend pandora-backend
+# docker run --network pandora -d --name pandora-backend pandora-backend
