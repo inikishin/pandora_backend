@@ -28,4 +28,6 @@ ROOT_URLCONF = 'pandora_backend.urls'
 WSGI_APPLICATION = 'pandora_backend.wsgi.application'
 
 STATIC_URL = '/static/'
+STATIC_ROOT = 'static/'
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
