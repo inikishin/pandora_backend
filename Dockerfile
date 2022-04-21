@@ -21,4 +21,6 @@ RUN rm -r source
 RUN python -m pip install --upgrade pip \
     && python -m pip install -r requirements.txt
 
+RUN python manage.py collectstatic --no-input --clear
+
 CMD uwsgi uwsgi.ini
