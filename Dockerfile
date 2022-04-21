@@ -21,9 +21,4 @@ RUN rm -r source
 RUN python -m pip install --upgrade pip \
     && python -m pip install -r requirements.txt
 
-RUN ls -la
-
 CMD uwsgi uwsgi.ini
-
-# docker build -t pandora-backend .
-# docker run --network pandora -d --name pandora-backend pandora-backend
